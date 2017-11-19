@@ -28,10 +28,10 @@ public class IntegrityNotificationReceiver extends BroadcastReceiver {
             if (notBeenCreated) {
                 integrityDetector = new IntegrityDetector();
             } else {
-                integrityDetector.onResume();
+                integrityDetector.startService(intent);
             }
         } else if (action.equals("local.transition.stopped_moving")) {
-                integrityDetector.onPause();
+                integrityDetector.stopSelf();
         }
 
     }
