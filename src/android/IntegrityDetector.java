@@ -14,12 +14,16 @@ import android.hardware.SensorManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import edu.berkeley.eecs.emission.cordova.unifiedlogger.Log;
 
 public class IntegrityDetector extends Service implements SensorEventListener {
 
     SensorManager sensorManager;
     Sensor linearAccelerometer;
     Sensor gyroscope;
+    private final String linearAccTAG = "linearAcceleration";
+    private final String gyroTAG = "gyroscope";
+
 
     @Nullable
     @Override
@@ -29,30 +33,50 @@ public class IntegrityDetector extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
-        sensorManager.registerListener(this, linearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL, new Handler());
+        linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); 
+        sensorManager.registerListener(this, linearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL, new Handler());
+        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
+
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION || sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            notifyEvent(this, sensorEvent);
-        }
+        float x = sensorEvent.values[0];
+        float y = sensorEvent.values[1];
+        float z = sensorEvent.values[2];
+
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            Log.d(this, linearAccTAG, Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z));    
+        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            Log.d(this, gyroTAG, Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z));    
+        }      
+
+        saveToDatabase(this, sensorEvent);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        if (sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+            Log.d(this, linearAccTAG, "onAccuracyChanged called, accuracy: " + accuracy);    
+        } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+            Log.d(this, gyroTAG, "onAccuracyChanged called, accuracy: " + accuracy);    
+        }
     }
 
-    public void notifyEvent(Context context, SensorEvent sensorEvent) {
+    public void saveToDatabase(Context context, SensorEvent sensorEvent) {
         SimpleMovementSensorEvent simpleMovementSensorEvent = new SimpleMovementSensorEvent(sensorEvent);
         UserCache uc = UserCacheFactory.getUserCache(context);
-        uc.putSensorData(R.string.key_usercache_movement_sensor, simpleMovementSensorEvent);
+        uc.putSensorData(R.string.movement_sensor, simpleMovementSensorEvent);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        sensorManager.unregisterListener(this);
     }
 }

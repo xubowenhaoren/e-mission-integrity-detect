@@ -3,6 +3,7 @@ package edu.berkeley.eecs.emission.cordova.integrityDetect;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import edu.berkeley.eecs.emission.R;
 
 
 public class IntegrityNotificationReceiver extends BroadcastReceiver {
@@ -23,16 +24,11 @@ public class IntegrityNotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-
-        if (action.equals("local.transition.exited_geofence")){
-            if (notBeenCreated) {
-                integrityDetector = new IntegrityDetector();
-            } else {
-                integrityDetector.startService(intent);
-            }
-        } else if (action.equals("local.transition.stopped_moving")) {
-                integrityDetector.stopSelf();
+        Intent i = new Intent(context, IntegrityDetector.class);
+        if (action.equals(context.getString(R.string.transition_exited_geofence))) {
+            context.startService(i);
+        } else if (action.equals(context.getString(R.string.transition_stopped_moving))) {
+            context.stopService(i);
         }
-
     }
 }
