@@ -15,23 +15,23 @@ public class IntegrityNotificationReceiver extends BroadcastReceiver {
 
     public IntegrityNotificationReceiver() {
         // The automatically created receiver needs a default constructor
-        Log.d(TAG, "noarg constructor called");    
+        android.util.Log.i(TAG, "noarg constructor called");
     }
 
     public IntegrityNotificationReceiver(Context context) {
-        Log.d(TAG, "constructor called with arg " + context);
+        android.util.Log.i(TAG, "constructor called with arg " + context);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(this, TAG, "onReceive called");
+        Log.d(context, TAG, "onReceive called");
         String action = intent.getAction();
         Intent i = new Intent(context, IntegrityDetector.class);
         if (action.equals(context.getString(R.string.transition_exited_geofence))) {
-            Log.d(TAG, "transition_exited_geofence received");
+            Log.d(context, TAG, "transition_exited_geofence received");
             context.startService(i);
         } else if (action.equals(context.getString(R.string.transition_stopped_moving))) {
-            Log.d(TAG, "transition_stopped_moving received");
+            Log.d(context, TAG, "transition_stopped_moving received");
             context.stopService(i);
         }
     }

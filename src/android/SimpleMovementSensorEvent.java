@@ -2,9 +2,8 @@ package edu.berkeley.eecs.emission.cordova.integrityDetect;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
-import edu.berkeley.eecs.emission.cordova.unifiedlogger.Log;
 
-public class SimpleMovementSensorEvent {
+public class SimpleMovementSensorEvent{
 
     public String getDataType() {
         return dataType;
@@ -48,8 +47,6 @@ public class SimpleMovementSensorEvent {
     }
 
     public SimpleMovementSensorEvent(SensorEvent sensorEvent) {
-
-        Log.d(TAG, "SimpleMovementSensorEvent created");
 
         x = sensorEvent.values[0];
         y = sensorEvent.values[1];
