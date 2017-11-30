@@ -38,6 +38,8 @@ public class SimpleMovementSensorEvent {
     private int accuracy;
     // unit second
     private float timestamp;
+    // dataType should be either Acceleration or AngularSpeed
+    // Please refer to IntegrityDetector for more details.
     private String dataType;
 
     public SimpleMovementSensorEvent() {
