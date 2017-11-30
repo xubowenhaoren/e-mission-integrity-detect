@@ -49,7 +49,7 @@ public class SimpleMovementSensorEvent {
 
     public SimpleMovementSensorEvent(SensorEvent sensorEvent) {
 
-        Log.d(this, TAG, "SimpleMovementSensorEvent created");
+        Log.d(TAG, "SimpleMovementSensorEvent created");
 
         x = sensorEvent.values[0];
         y = sensorEvent.values[1];
