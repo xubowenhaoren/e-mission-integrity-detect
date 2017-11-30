@@ -2,6 +2,7 @@ package edu.berkeley.eecs.emission.cordova.integrityDetect;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
+import edu.berkeley.eecs.emission.cordova.unifiedlogger.Log;
 
 public class SimpleMovementSensorEvent {
 
@@ -29,6 +30,7 @@ public class SimpleMovementSensorEvent {
         return accuracy;
     }
 
+    private static String TAG =  SimpleMovementSensorEvent.class.getSimpleName();
     private static final float NS2S = 1.0f / 1000000000.0f;
     // unit m/s^2 for acceleration
     // unit radians/second for gyroscope
@@ -46,6 +48,8 @@ public class SimpleMovementSensorEvent {
     }
 
     public SimpleMovementSensorEvent(SensorEvent sensorEvent) {
+
+        Log.d(this, TAG, "SimpleMovementSensorEvent created");
 
         x = sensorEvent.values[0];
         y = sensorEvent.values[1];

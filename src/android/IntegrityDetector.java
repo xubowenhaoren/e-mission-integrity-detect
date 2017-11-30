@@ -23,6 +23,9 @@ public class IntegrityDetector extends Service implements SensorEventListener {
     Sensor gyroscope;
     private final String linearAccTAG = "linearAcceleration";
     private final String gyroTAG = "gyroscope";
+    private final String startTAG = "onStartCommand";
+    private final String savingTAG = "saveToDatabase";
+    private final String destoryTAG = "onDestroy";
 
 
     @Nullable
@@ -33,6 +36,8 @@ public class IntegrityDetector extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d(this, startTAG, "onStartCommand called");    
+
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
         linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); 
@@ -69,6 +74,7 @@ public class IntegrityDetector extends Service implements SensorEventListener {
     }
 
     public void saveToDatabase(Context context, SensorEvent sensorEvent) {
+        Log.d(this, savingTAG, "saveToDatabase called");    
         SimpleMovementSensorEvent simpleMovementSensorEvent = new SimpleMovementSensorEvent(sensorEvent);
         UserCache uc = UserCacheFactory.getUserCache(context);
         uc.putSensorData(R.string.movement_sensor, simpleMovementSensorEvent);
@@ -76,6 +82,7 @@ public class IntegrityDetector extends Service implements SensorEventListener {
 
     @Override
     public void onDestroy() {
+        Log.d(this, destoryTAG, "onDestroy called");    
         super.onDestroy();
         sensorManager.unregisterListener(this);
     }
