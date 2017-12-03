@@ -11,22 +11,32 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Handler;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import edu.berkeley.eecs.emission.cordova.unifiedlogger.Log;
 
 public class IntegrityDetector extends Service implements SensorEventListener {
 
     SensorManager sensorManager;
     Sensor linearAccelerometer;
-    Sensor gyroscope;
     private final String linearAccTAG = "linearAcceleration";
-    private final String gyroTAG = "gyroscope";
-    private final String startTAG = "onStartCommand";
-    private final String savingTAG = "saveToDatabase";
-    private final String destoryTAG = "onDestroy";
 
+    ArrayList<Double> input = new ArrayList<Double>();
+
+    private final double PI = 3.1415926535897932384626433832795;
+    private final double FREQ = 1.0;
+    // Unit: mm
+    private final double threshold = 50;
+    // Unit: s
+    private final long timeDuration = 30;
+
+    long startTime = 0;
+    int bumpCount = 0;
+    int resultCount = 0;
 
     @Nullable
     @Override
@@ -36,54 +46,100 @@ public class IntegrityDetector extends Service implements SensorEventListener {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d(this, startTAG, "onStartCommand called");    
 
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
-        linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION); 
+        linearAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION);
         sensorManager.registerListener(this, linearAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        sensorManager.registerListener(this, gyroscope, SensorManager.SENSOR_DELAY_NORMAL);
 
         return super.onStartCommand(intent, flags, startId);
     }
 
     @Override
     public void onSensorChanged(SensorEvent sensorEvent) {
-        float x = sensorEvent.values[0];
-        float y = sensorEvent.values[1];
-        float z = sensorEvent.values[2];
 
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            Log.d(this, linearAccTAG, Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z));    
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            Log.d(this, gyroTAG, Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z));    
-        }      
+        if (startTime == 0) {
+            startTime = System.currentTimeMillis();
+        }
 
-        saveToDatabase(this, sensorEvent);
+        // Unit: second
+        long tmpTimeDuration = (System.currentTimeMillis() - startTime) / 1000;
+        if (tmpTimeDuration >= timeDuration) {
+//            Log.d(this, linearAccTAG, "number of results is " + resultCount);
+//            Log.d(this, linearAccTAG, "number of bumps is " + bumpCount);
+            startTime = System.currentTimeMillis();
+            bumpCount = 0;
+            resultCount = 0;
+            saveToDatabase(this, new SimpleMovementSensorEvent(sensorEvent.accuracy, bumpCount, threshold, timeDuration));
+        }
+
+        // Unit: convert m/s^2 to mm/s^2
+        float x = sensorEvent.values[0] * 1000;
+        float y = sensorEvent.values[1] * 1000;
+        float z = sensorEvent.values[2] * 1000;
+
+//        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
+//            Log.d(this, linearAccTAG, Float.toString(x) + ", " + Float.toString(y) + ", " + Float.toString(z));
+//        }
+
+        double v = (double) (x * x + y * y + z * z);
+//        Log.d(this, linearAccTAG, "v is " + v);
+        input.add(Math.sqrt(v));
+
+        if (input.size() == 5) {
+            Double averageAccel = calculateAverage(input);
+//            Log.d(this, linearAccTAG, "average is " + averageAccel);
+
+            Double result = accel2mms(averageAccel, FREQ);
+            resultCount++;
+//            Log.d(this, linearAccTAG, "result is " + result);
+
+            if (result > threshold) {
+                bumpCount++;
+            }
+            input.clear();
+        }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         if (sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            Log.d(this, linearAccTAG, "onAccuracyChanged called, accuracy: " + accuracy);    
-        } else if (sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            Log.d(this, gyroTAG, "onAccuracyChanged called, accuracy: " + accuracy);    
+            Log.d(this, linearAccTAG, "onAccuracyChanged called, accuracy: " + accuracy);
         }
     }
 
-    public void saveToDatabase(Context context, SensorEvent sensorEvent) {
-        Log.d(this, savingTAG, "saveToDatabase called");    
-        SimpleMovementSensorEvent simpleMovementSensorEvent = new SimpleMovementSensorEvent(sensorEvent);
+    public void saveToDatabase(Context context, SimpleMovementSensorEvent simpleMovementSensorEvent) {
+        String savingTAG = "saveToDatabase";
+        Log.d(this, savingTAG, "saveToDatabase called");
         UserCache uc = UserCacheFactory.getUserCache(context);
         uc.putSensorData(R.string.movement_sensor, simpleMovementSensorEvent);
     }
 
     @Override
     public void onDestroy() {
-        Log.d(this, destoryTAG, "onDestroy called");    
+        String destoryTAG = "onDestroy";
+        Log.d(this, destoryTAG, "onDestroy called");
         super.onDestroy();
         sensorManager.unregisterListener(this);
+    }
+
+    private double calculateAverage(List<Double> list) {
+        Double sum = 0.0;
+        if (!list.isEmpty()) {
+            for (Double n : list) {
+                sum += n;
+            }
+            return sum / list.size();
+        }
+        return sum;
+    }
+
+    /*
+        This calculation is based on a sinusoidal waveform,
+        so the frequency would be representative of the physical movement of the accelerometer
+        not the frequency of the sampling rate.
+     */
+    private double accel2mms(double accel, double freq) {
+        return accel / (2 * PI * freq);
     }
 }

@@ -1,64 +1,36 @@
 package edu.berkeley.eecs.emission.cordova.integrityDetect;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-
-public class SimpleMovementSensorEvent{
-
-    public String getDataType() {
-        return dataType;
-    }
-
-    public float getX() {
-        return x;
-    }
-
-    public float getY() {
-        return y;
-    }
-
-    public float getZ() {
-        return z;
-    }
-
-    public float getTimeStamp() {
-        return timestamp;
-    }
+public class SimpleMovementSensorEvent {
 
     public float getAccuracy() {
         return accuracy;
     }
 
-    private static String TAG =  SimpleMovementSensorEvent.class.getSimpleName();
-    private static final float NS2S = 1.0f / 1000000000.0f;
-    // unit m/s^2 for acceleration
-    // unit radians/second for gyroscope
-    private float x;
-    private float y;
-    private float z;
+    public int getNumberOfBumps() {
+        return numberOfBumps;
+    }
+
+    public double getThershold() {
+        return thershold;
+    }
+
+    public long getTimeDuration() {
+        return timeDuration;
+    }
+
     private int accuracy;
-    // unit second
-    private float timestamp;
-    // dataType should be either Acceleration or AngularSpeed
-    // Please refer to IntegrityDetector for more details.
-    private String dataType;
+    private int numberOfBumps;
+    private double thershold;
+    private long timeDuration;
+
 
     public SimpleMovementSensorEvent() {
     }
 
-    public SimpleMovementSensorEvent(SensorEvent sensorEvent) {
-
-        x = sensorEvent.values[0];
-        y = sensorEvent.values[1];
-        z = sensorEvent.values[2];
-
-        accuracy = sensorEvent.accuracy;
-        timestamp = sensorEvent.timestamp * NS2S;
-
-        if (sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
-            dataType = "Acceleration";
-        } else if (sensorEvent.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            dataType = "AngularSpeed";
-        }
+    public SimpleMovementSensorEvent(int accuracy, int numberOfBumps, double thershold, long timeDuration) {
+        this.accuracy = accuracy;
+        this.numberOfBumps = numberOfBumps;
+        this.thershold = thershold;
+        this.timeDuration = timeDuration;
     }
 }
