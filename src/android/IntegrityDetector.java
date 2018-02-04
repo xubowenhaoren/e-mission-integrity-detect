@@ -171,31 +171,53 @@ public class IntegrityDetector extends Service implements SensorEventListener {
                 // If the last input is identified as bump,
                 // then the time stamps added as bumps may be greater then the time stamp we get directly from sensor data.
                 // save the output values  into the database
-                double[] resultX = new double[2];
-                double[] resultY = new double[2];
-                double[] resultZ = new double[2];
+                if (Math.abs(latitude - 0.0) > 0.001 && Math.abs(longitude - 0.0) > 0.001) {
+                    double[] resultX = new double[2];
+                    double[] resultY = new double[2];
+                    double[] resultZ = new double[2];
 
-                if (timeStampsX.size() != 0) {
-                    resultX = getSTDandMean(timeStampsX);
+                    if (timeStampsX.size() != 0) {
+                        resultX = getSTDandMean(timeStampsX);
+                    }
+
+                    if (timeStampsY.size() != 0) {
+                        resultY = getSTDandMean(timeStampsY);
+                    }
+
+                    if (timeStampsZ.size() != 0) {
+                        resultZ = getSTDandMean(timeStampsZ);
+                    }
+
+
+                    saveToDatabase(this, new SimpleMovementSensorEvent(resultX[0], resultX[1], timeStampsX, resultY[0], resultY[1], timeStampsY, resultZ[0], resultZ[1], timeStampsZ, latitude, longitude, sensorEvent.timestamp));
+                    Log.d(this, linearAccTAG, "Saved into database");
                 }
-
-                if (timeStampsY.size() != 0) {
-                    resultY = getSTDandMean(timeStampsY);
-                }
-
-                if (timeStampsZ.size() != 0) {
-                    resultZ = getSTDandMean(timeStampsZ);
-                }
-
-
-                saveToDatabase(this, new SimpleMovementSensorEvent(resultX[0], resultX[1], timeStampsX, resultY[0], resultY[1], timeStampsY, resultZ[0], resultZ[1], timeStampsZ, latitude, longitude, sensorEvent.timestamp));
-                Log.d(this, linearAccTAG, "Saved into database");
-
-                timeStampsX.clear();
-                timeStampsY.clear();
-                timeStampsZ.clear();
+                
+                renew();
             }
         }
+    }
+
+    private void renew() {
+
+        startTime = System.currentTimeMillis();
+
+        rawValuesWindow.clear();
+        rawValues.clear();
+        valuesLowPass.clear();
+
+        xLowPass.clear();
+        yLowPass.clear();
+        zLowPass.clear();
+
+        isReady = false;
+        isInitialized = false;
+
+        timeStampsX.clear();
+        timeStampsY.clear();
+        timeStampsZ.clear();
+        
+        numberOfRawValues = 0;
     }
 
     private boolean checkBump(float lowPassValue, double threshold) {
