@@ -1,0 +1,17 @@
+{
+  "name": "edu.berkeley.eecs.emission.cordova.integrityDetect",
+  "version": "1.0.0",
+  "description": "Have the App to collect accelerometer and gyroscope data at background, and send collected data into server.",
+  "cordova": {
+    "id": "edu.berkeley.eecs.emission.cordova.integrityDetect",
+    "platforms": [
+      "android"
+    ]
+  },
+  "keywords": [
+    "ecosystem:cordova",
+    "cordova-android"
+  ],
+  "author": "Bingbing Huang, Bowen Xu (bwx074@cs.washington.edu)",
+  "license": "Modified BSD license"
+}
