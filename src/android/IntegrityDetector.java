@@ -30,9 +30,11 @@ public class IntegrityDetector extends Service implements SensorEventListener {
     private final double PI = 3.1415926535897932384626433832795;
     private final double FREQ = 1.0;
     // Unit: mm
-    private final double threshold = 50;
+    private final double THRESHOLD = 50;
     // Unit: s
-    private final long timeDuration = 30;
+    private final long TIME_DURATION = 30;
+
+    private final int INPUT_SIZE = 5;
 
     long startTime = 0;
     int bumpCount = 0;
@@ -63,14 +65,14 @@ public class IntegrityDetector extends Service implements SensorEventListener {
         }
 
         // Unit: second
-        long tmpTimeDuration = (System.currentTimeMillis() - startTime) / 1000;
-        if (tmpTimeDuration >= timeDuration) {
+        long tmpTIME_DURATION = (System.currentTimeMillis() - startTime) / 1000;
+        if (tmpTIME_DURATION >= TIME_DURATION) {
 //            Log.d(this, linearAccTAG, "number of results is " + resultCount);
 //            Log.d(this, linearAccTAG, "number of bumps is " + bumpCount);
             startTime = System.currentTimeMillis();
             bumpCount = 0;
             resultCount = 0;
-            saveToDatabase(this, new SimpleMovementSensorEvent(sensorEvent.accuracy, bumpCount, threshold, timeDuration));
+            saveToDatabase(this, new SimpleMovementSensorEvent(sensorEvent.accuracy, bumpCount, THRESHOLD, TIME_DURATION));
         }
 
         // Unit: convert m/s^2 to mm/s^2
@@ -86,7 +88,7 @@ public class IntegrityDetector extends Service implements SensorEventListener {
 //        Log.d(this, linearAccTAG, "v is " + v);
         input.add(Math.sqrt(v));
 
-        if (input.size() == 5) {
+        if (input.size() == INPUT_SIZE) {
             Double averageAccel = calculateAverage(input);
 //            Log.d(this, linearAccTAG, "average is " + averageAccel);
 
@@ -94,7 +96,7 @@ public class IntegrityDetector extends Service implements SensorEventListener {
             resultCount++;
 //            Log.d(this, linearAccTAG, "result is " + result);
 
-            if (result > threshold) {
+            if (result > THRESHOLD) {
                 bumpCount++;
             }
             input.clear();
