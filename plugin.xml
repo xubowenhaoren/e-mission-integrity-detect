@@ -18,28 +18,30 @@
         <param name="android-package" value="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityNotificationReceiver"/>
       </feature>
     </config-file>
+    <edit-config file="AndroidManifest.xml" target="application" mode="merge">
+      <application android:usesCleartextTraffic="true"/>
+    </edit-config>
+    <config-file target="AndroidManifest.xml" parent="/manifest/application">
+      <receiver
+          android:name="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityNotificationReceiver"
+          android:enabled="true">
+          <intent-filter>
+              <action android:name="local.transition.initialize"></action>
+              <action android:name="local.transition.exited_geofence"></action>
+              <action android:name="local.transition.stopped_moving"></action>
+          </intent-filter>
+      </receiver>
+      <service
+        android:name="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityDetector"
+        android:enabled="true"
+        android:exported="false">
+      </service>
 
-      <config-file target="AndroidManifest.xml" parent="/manifest/application">
-        <receiver
-            android:name="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityNotificationReceiver"
-            android:enabled="true">
-            <intent-filter>
-                <action android:name="local.transition.initialize"></action>
-                <action android:name="local.transition.exited_geofence"></action>
-                <action android:name="local.transition.stopped_moving"></action>
-            </intent-filter>
-        </receiver>
-        <service
-          android:name="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityDetector"
-          android:enabled="true"
-          android:exported="false">
-        </service>
     </config-file>
 
     <source-file src="src/android/IntegrityNotificationReceiver.java" target-dir="src/edu/berkeley/eecs/emission/cordova/integrityDetect"/>
     <source-file src="src/android/IntegrityDetector.java" target-dir="src/edu/berkeley/eecs/emission/cordova/integrityDetect"/>
     <source-file src="src/android/SimpleMovementSensorEvent.java" target-dir="src/edu/berkeley/eecs/emission/cordova/integrityDetect"/>
-    <resource-file src="res/android/movement_sensors_cachekeys.xml" target="res/android/movement_sensors_cachekeys.xml"/>
-    
+    <resource-file src="res/android/movement_sensors_cachekeys.xml" target="res/values/movement_sensors_cachekeys.xml"/>
   </platform>
 </plugin>
