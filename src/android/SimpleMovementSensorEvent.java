@@ -10,8 +10,8 @@ public class SimpleMovementSensorEvent {
         return numberOfBumps;
     }
 
-    public double getThershold() {
-        return thershold;
+    public double getThreshold() {
+        return threshold;
     }
 
     public long getTimeDuration() {
@@ -20,17 +20,17 @@ public class SimpleMovementSensorEvent {
 
     private int accuracy;
     private int numberOfBumps;
-    private double thershold;
+    private double threshold;
     private long timeDuration;
 
 
     public SimpleMovementSensorEvent() {
     }
 
-    public SimpleMovementSensorEvent(int accuracy, int numberOfBumps, double thershold, long timeDuration) {
+    public SimpleMovementSensorEvent(int accuracy, int numberOfBumps, double threshold, long timeDuration) {
         this.accuracy = accuracy;
         this.numberOfBumps = numberOfBumps;
-        this.thershold = thershold;
+        this.threshold = threshold;
         this.timeDuration = timeDuration;
     }
 }
