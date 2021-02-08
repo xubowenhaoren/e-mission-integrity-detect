@@ -18,9 +18,6 @@
         <param name="android-package" value="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityNotificationReceiver"/>
       </feature>
     </config-file>
-    <edit-config file="AndroidManifest.xml" target="application" mode="merge">
-      <application android:usesCleartextTraffic="true"/>
-    </edit-config>
     <config-file target="AndroidManifest.xml" parent="/manifest/application">
       <receiver
           android:name="edu.berkeley.eecs.emission.cordova.integrityDetect.IntegrityNotificationReceiver"
